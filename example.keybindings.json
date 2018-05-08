@@ -1,0 +1,42 @@
+[
+    {
+        "key": "ctrl+shift+k",
+        "command": "extension.fastcursor.up.select",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+j",
+        "command": "extension.fastcursor.down.select",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+h",
+        "command": "extension.fastcursor.left.select",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+l",
+        "command": "extension.fastcursor.right.select",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+cmd+k",
+        "command": "extension.fastcursor.up",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+cmd+j",
+        "command": "extension.fastcursor.down",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+cmd+h",
+        "command": "extension.fastcursor.left",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+cmd+l",
+        "command": "extension.fastcursor.right",
+        "when": "editorTextFocus && !editorReadonly"
+    }
+]

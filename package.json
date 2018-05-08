@@ -1,7 +1,7 @@
 {
     "name": "fastcursor",
-    "displayName": "fastCursor",
-    "description": "move cursor quickly by hotkey",
+    "displayName": "Fast Cursor Move",
+    "description": "Move cursor quickly by hotkey.",
     "version": "0.0.1",
     "publisher": "zhaiduo",
     "engines": {
@@ -11,14 +11,49 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.fastcursor"
+        "onCommand:extension.fastcursor.up.select",
+        "onCommand:extension.fastcursor.down.select",
+        "onCommand:extension.fastcursor.left.select",
+        "onCommand:extension.fastcursor.right.select",
+        "onCommand:extension.fastcursor.up",
+        "onCommand:extension.fastcursor.down",
+        "onCommand:extension.fastcursor.left",
+        "onCommand:extension.fastcursor.right"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.fastcursor",
-                "title": "fastcursor"
+                "command": "extension.fastcursor.up.select",
+                "title": "fastcursor.up"
+            },
+            {
+                "command": "extension.fastcursor.down.select",
+                "title": "fastcursor.down"
+            },
+            {
+                "command": "extension.fastcursor.left.select",
+                "title": "fastcursor.left"
+            },
+            {
+                "command": "extension.fastcursor.right.select",
+                "title": "fastcursor.right"
+            },
+            {
+                "command": "extension.fastcursor.up",
+                "title": "fastcursor.up"
+            },
+            {
+                "command": "extension.fastcursor.down",
+                "title": "fastcursor.down"
+            },
+            {
+                "command": "extension.fastcursor.left",
+                "title": "fastcursor.left"
+            },
+            {
+                "command": "extension.fastcursor.right",
+                "title": "fastcursor.right"
             }
         ]
     },

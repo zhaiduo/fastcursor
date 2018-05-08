@@ -9,20 +9,66 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "fastcursor" is now active!');
+    //console.log('Congratulations, your extension "fastcursor" is now active!');
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.fastcursor', () => {
-        // The code you place here will be executed every time your command is executed
+    let isSelect = true
+    let disposable = vscode.commands.registerCommand('extension.fastcursor.up.select', () => {
+        moveByCursor("up", "wrappedLine", isSelect, 1);
+    });
 
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
+    let disposable2 = vscode.commands.registerCommand('extension.fastcursor.down.select', () => {
+        moveByCursor("down", "wrappedLine", isSelect, 1);
+    });
+
+    let disposable3 = vscode.commands.registerCommand('extension.fastcursor.left.select', () => {
+        moveByCursor("left", "wrappedLine", isSelect, 1);
+    });
+
+    let disposable4 = vscode.commands.registerCommand('extension.fastcursor.right.select', () => {
+        moveByCursor("right", "wrappedLine", isSelect, 1);
+    });
+
+    isSelect = false
+
+    let disposable5 = vscode.commands.registerCommand('extension.fastcursor.up', () => {
+        moveByCursor("up", "wrappedLine", isSelect, 1);
+    });
+
+    let disposable6 = vscode.commands.registerCommand('extension.fastcursor.down', () => {
+        moveByCursor("down", "wrappedLine", isSelect, 1);
+    });
+
+    let disposable7 = vscode.commands.registerCommand('extension.fastcursor.left', () => {
+        moveByCursor("left", "wrappedLine", isSelect, 1);
+    });
+
+    let disposable8 = vscode.commands.registerCommand('extension.fastcursor.right', () => {
+        moveByCursor("right", "wrappedLine", isSelect, 1);
     });
 
     context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable2);
+    context.subscriptions.push(disposable3);
+    context.subscriptions.push(disposable4);
+    context.subscriptions.push(disposable5);
+    context.subscriptions.push(disposable6);
+    context.subscriptions.push(disposable7);
+    context.subscriptions.push(disposable8);
 }
+
+const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSelect: boolean = false, count: number = 1): void => {
+    let editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return; // No open text editor
+    }
+    //https://github.com/Microsoft/vscode/issues/9143
+    vscode.commands.executeCommand("cursorMove", {
+        to: direction,
+        by: by,
+        select: isSelect,
+        value: count
+    });
+};
 
 // this method is called when your extension is deactivated
 export function deactivate() {
