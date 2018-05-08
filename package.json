@@ -2,7 +2,7 @@
     "name": "fastcursor",
     "displayName": "Fast Cursor Move",
     "description": "Move cursor quickly by hotkey.",
-    "version": "0.0.2",
+    "version": "0.1.2",
     "publisher": "zhaiduo",
     "engines": {
         "vscode": "^1.22.0"
