@@ -1,4 +1,4 @@
-# fastcursor README v0.0.1
+# fastcursor README v0.0.2
 
 This extension helps you move cursor quickly.
 
@@ -16,6 +16,19 @@ Up Move: ctrl+cmd+k
 Down Move: ctrl+cmd+j
 Left Move: ctrl+cmd+h
 Right Move: ctrl+cmd+l
+
+Right Move: ctrl+cmd+1
+Right Move: ctrl+cmd+e
+
+Move to the head of line: ctrl+cmd+1
+Move to the end of line: ctrl+cmd+e
+
+Move to the head word of line: shift+cmd+1
+Move to the end word of line: shift+cmd+e
+
+Move to the top of doc: ctrl+cmd+g
+Move to the middle of doc: ctrl+cmd+m
+Move to the bottom of doc: ctrl+cmd+b
 
 Up Selection: ctrl+shift+k
 Down Selection: ctrl+shift+j

@@ -2,7 +2,7 @@
     "name": "fastcursor",
     "displayName": "Fast Cursor Move",
     "description": "Move cursor quickly by hotkey.",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "zhaiduo",
     "engines": {
         "vscode": "^1.22.0"
@@ -18,7 +18,14 @@
         "onCommand:extension.fastcursor.up",
         "onCommand:extension.fastcursor.down",
         "onCommand:extension.fastcursor.left",
-        "onCommand:extension.fastcursor.right"
+        "onCommand:extension.fastcursor.right",
+        "onCommand:extension.fastcursor.start",
+        "onCommand:extension.fastcursor.end",
+        "onCommand:extension.fastcursor.first",
+        "onCommand:extension.fastcursor.last",
+        "onCommand:extension.fastcursor.top",
+        "onCommand:extension.fastcursor.vcenter",
+        "onCommand:extension.fastcursor.bottom"
     ],
     "main": "./out/extension",
     "contributes": {
