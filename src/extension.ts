@@ -129,7 +129,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
     let startChar = '';
     let lastChar = '';
     const selectionContainChars: any = ['\'', '\"', '[', ']', '(', ')'];
-    const selectionStopChars: any = ['.'];
+    const selectionStopChars: any = ['.', ',', ':', '&'];
 
     if (isByWord && direction.match(/^(left|right)$/i)) {
         d = RegExp.$1;
@@ -140,7 +140,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
         lastChar = startChar;
         while (lastChar !== ' ') {
             c++;
-            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|,|;|=|\?|>|<|\n|\t|\+|\.|\-)/i)) {
+            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|,|:|;|=|&|\?|>|<|\n|\t|\+|\.|\-)/i)) {
                 break;
             }
             position = newPosition;
