@@ -126,26 +126,43 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
     let position = null;
     let newPosition = null;
     let rg = null;
+    let startChar = '';
+    let lastChar = '';
+    const selectionContainChars: any = ['\'', '\"', '[', ']', '(', ')'];
+    const selectionStopChars: any = ['.'];
 
     if (isByWord && direction.match(/^(left|right)$/i)) {
         d = RegExp.$1;
         position = editor.selection.active;
         newPosition = getNewPosition(position, d);
         rg = new vscode.Range(position, newPosition);
-
-        while (doc.getText(rg) !== ' ') {
+        startChar = doc.getText(rg);
+        lastChar = startChar;
+        while (lastChar !== ' ') {
             c++;
-            if (c > 80 || doc.getText(rg).match(/( |\"|\'|\[|\]|\(|\)|,|;|=|\?|>|<|\n|\t|\+|\.|\-)/i)) {
+            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|,|;|=|\?|>|<|\n|\t|\+|\.|\-)/i)) {
                 break;
             }
             position = newPosition;
             newPosition = getNewPosition(position, d);
             rg = new vscode.Range(position, newPosition);
+            lastChar = doc.getText(rg);
         }
         if (c > 1) {
             c--;
+            if (isSelect && c > 1) {
+                if (selectionContainChars.includes(lastChar) && startChar !== lastChar) {
+                    c--;
+                } else if (selectionStopChars.includes(lastChar)) {
+                    c--;
+                }
+            } else if (!isSelect && c > 1) {
+                if (selectionContainChars.includes(lastChar) || selectionStopChars.includes(lastChar)) {
+                    c--;
+                }
+            }
         }
-        console.log("_count", c, newPosition);
+        //console.log("_count", c, newPosition);
 
     }
     const _count = isByWord ? c : count;
