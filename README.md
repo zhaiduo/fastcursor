@@ -1,4 +1,4 @@
-# fastcursor README v0.1.2
+# fastcursor README v0.1.3
 
 This extension helps you move cursor quickly.
 
