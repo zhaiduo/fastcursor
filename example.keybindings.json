@@ -20,6 +20,26 @@
         "when": "editorTextFocus && !editorReadonly"
     },
     {
+        "key": "ctrl+shift+1",
+        "command": "extension.fastcursor.start.select",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+e",
+        "command": "extension.fastcursor.end.select",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+cmd+1",
+        "command": "extension.fastcursor.first.select",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+cmd+e",
+        "command": "extension.fastcursor.last.select",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
         "key": "ctrl+cmd+k",
         "command": "extension.fastcursor.up",
         "when": "editorTextFocus && !editorReadonly"

@@ -28,6 +28,26 @@ export function activate(context: vscode.ExtensionContext) {
         moveByCursor("right", "wrappedLine", isSelected, 1);
     });
 
+    //wrappedLineFirstNonWhitespaceCharacter
+    let disposable99 = vscode.commands.registerCommand('extension.fastcursor.first.select', () => {
+        moveByCursor("wrappedLineFirstNonWhitespaceCharacter", "wrappedLine", isSelected, 1);
+    });
+
+    //wrappedLineLastNonWhitespaceCharacter
+    let disposable98 = vscode.commands.registerCommand('extension.fastcursor.last.select', () => {
+        moveByCursor("wrappedLineLastNonWhitespaceCharacter", "wrappedLine", isSelected, 1);
+    });
+
+    //wrappedLineStart
+    let disposable97 = vscode.commands.registerCommand('extension.fastcursor.start.select', () => {
+        moveByCursor("wrappedLineStart", "wrappedLine", isSelected, 1);
+    });
+
+    //wrappedLineEnd
+    let disposable96 = vscode.commands.registerCommand('extension.fastcursor.end.select', () => {
+        moveByCursor("wrappedLineEnd", "wrappedLine", isSelected, 1);
+    });
+
     let isSelect = false;
 
     let disposable5 = vscode.commands.registerCommand('extension.fastcursor.up', () => {
@@ -102,6 +122,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable14);
     context.subscriptions.push(disposable15);
     context.subscriptions.push(disposable16);
+    context.subscriptions.push(disposable99);
+    context.subscriptions.push(disposable98);
+    context.subscriptions.push(disposable97);
+    context.subscriptions.push(disposable96);
 }
 
 const getNewPosition = (position: vscode.Position, direction: String = "left"): vscode.Position => {
@@ -128,8 +152,8 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
     let rg = null;
     let startChar = '';
     let lastChar = '';
-    const selectionContainChars: any = ['\'', '\"', '[', ']', '(', ')'];
-    const selectionStopChars: any = ['.'];
+    const selectionContainChars: any = ['\'', '\"', '[', ']', '(', ')', '{', '}'];
+    const selectionStopChars: any = ['.', ',', ':', '&', '+', '-', '<', '>'];
 
     if (isByWord && direction.match(/^(left|right)$/i)) {
         d = RegExp.$1;
@@ -140,7 +164,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
         lastChar = startChar;
         while (lastChar !== ' ') {
             c++;
-            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|,|;|=|\?|>|<|\n|\t|\+|\.|\-)/i)) {
+            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|\{|\}|,|:|;|=|&|\?|>|<|\n|\t|\+|\.|\-)/i)) {
                 break;
             }
             position = newPosition;
