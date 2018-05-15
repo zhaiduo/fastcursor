@@ -142,6 +142,7 @@ const getNewPosition = (position: vscode.Position, direction: String = "left"): 
 const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSelect: boolean = false, count: number = 1, isByWord: boolean = true): void => {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
+        console.log("no editor");
         return; // No open text editor
     }
     const doc = editor.document;
@@ -149,6 +150,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
     let c = 1;
     let position = null;
     let newPosition = null;
+    let firstPosition = null;
     let rg = null;
     let startChar = '';
     let lastChar = '';
@@ -159,6 +161,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
         d = RegExp.$1;
         position = editor.selection.active;
         newPosition = getNewPosition(position, d);
+        firstPosition = position.with(position.line, 0);
         rg = new vscode.Range(position, newPosition);
         startChar = doc.getText(rg);
         lastChar = startChar;
@@ -169,9 +172,15 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
             }
             position = newPosition;
             newPosition = getNewPosition(position, d);
+            console.log("firstPosition", `[${lastChar}]`, newPosition === firstPosition);
+            if (newPosition === firstPosition) {
+                break;
+            }
             rg = new vscode.Range(position, newPosition);
             lastChar = doc.getText(rg);
+            console.log("lastChar", c, `[${lastChar}]`);
         }
+        console.log("lastChar-======", c, `[${lastChar}]`);
         if (c > 1) {
             c--;
             if (isSelect && c > 1) {
@@ -186,7 +195,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
                 }
             }
         }
-        //console.log("_count", c, newPosition);
+        console.log("_count", c, newPosition);
 
     }
     const _count = isByWord ? c : count;
