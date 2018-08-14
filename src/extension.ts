@@ -167,7 +167,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
         lastChar = startChar;
         while (lastChar !== ' ') {
             c++;
-            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|\{|\}|,|:|;|=|&|\?|>|<|\n|\t|\+|\.|\-)/i)) {
+            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|\{|\}|,|:|;|=|&|\?|>|<|\n|\t|\+|\.|\/|\-)/i)) {
                 break;
             }
             position = newPosition;
