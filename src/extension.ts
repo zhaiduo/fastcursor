@@ -106,6 +106,14 @@ export function activate(context: vscode.ExtensionContext) {
         moveByCursor("viewPortBottom", "line", isSelect, 1);
     });
 
+    let disposable17 = vscode.commands.registerCommand('extension.fastcursor.up10', () => {
+        moveByCursor("up", "line", isSelect, 10, false);
+    });
+
+    let disposable18 = vscode.commands.registerCommand('extension.fastcursor.down10', () => {
+        moveByCursor("down", "line", isSelect, 10, false);
+    });
+
     context.subscriptions.push(disposable);
     context.subscriptions.push(disposable2);
     context.subscriptions.push(disposable3);
@@ -122,6 +130,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable14);
     context.subscriptions.push(disposable15);
     context.subscriptions.push(disposable16);
+    context.subscriptions.push(disposable17);
+    context.subscriptions.push(disposable18);
     context.subscriptions.push(disposable99);
     context.subscriptions.push(disposable98);
     context.subscriptions.push(disposable97);
@@ -167,7 +177,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
         lastChar = startChar;
         while (lastChar !== ' ') {
             c++;
-            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|\{|\}|,|:|;|=|&|\?|>|<|\n|\t|\+|\.|\/|\-)/i)) {
+            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|\{|\}|,|:|;|=|&|\?|>|<|\n|\t|\+|\.|\/|!|\-)/i)) {
                 break;
             }
             position = newPosition;
@@ -200,6 +210,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
     }
     const _count = isByWord ? c : count;
     //https://github.com/Microsoft/vscode/issues/9143
+    console.log("cursorMove", isSelect, _count)
     vscode.commands.executeCommand("cursorMove", {
         to: direction,
         by: by,

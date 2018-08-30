@@ -93,5 +93,15 @@
         "key": "ctrl+cmd+b",
         "command": "extension.fastcursor.bottom",
         "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+cmd+k",
+        "command": "extension.fastcursor.up10",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+shift+cmd+j",
+        "command": "extension.fastcursor.down10",
+        "when": "editorTextFocus && !editorReadonly"
     }
 ]
