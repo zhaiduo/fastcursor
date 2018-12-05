@@ -158,6 +158,7 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
     const doc = editor.document;
     let d = '';
     let c = 1;
+    let skip = 0;
     let position = null;
     let newPosition = null;
     let firstPosition = null;
@@ -175,9 +176,9 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
         rg = new vscode.Range(position, newPosition);
         startChar = doc.getText(rg);
         lastChar = startChar;
-        while (lastChar !== ' ') {
+        while (lastChar !== " ") {
             c++;
-            if (c > 80 || lastChar.match(/( |\"|\'|\[|\]|\(|\)|\{|\}|,|:|;|=|&|\?|>|<|\n|\t|\+|\.|\/|!|\-)/i)) {
+            if (c > 80 || lastChar.match(/(\"|\'|\[|\]|\(|\)|\{|\}|,|:|;|=|&|\?|>|<|\n|\t|\r|\+|\.|\/|!|\-)/i)) {
                 break;
             }
             position = newPosition;
@@ -190,6 +191,17 @@ const moveByCursor = (direction: string = "up", by: string = "wrappedLine", isSe
             lastChar = doc.getText(rg);
             console.log("lastChar", c, `[${lastChar}]`);
         }
+
+        //auto skip space
+        while(lastChar === " ") {
+            skip++;
+            c++;
+            position = newPosition;
+            newPosition = getNewPosition(position, d);
+            rg = new vscode.Range(position, newPosition);
+            lastChar = doc.getText(rg);
+        }
+        //console.log('skip space', skip)
         console.log("lastChar-======", c, `[${lastChar}]`);
         if (c > 1) {
             c--;
