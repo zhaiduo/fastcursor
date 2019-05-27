@@ -255,10 +255,12 @@ const moveByCursor = (
   let skip = 0;
   let position = null;
   let newPosition = null;
+  let newPosition2 = null;
   let firstPosition = null;
   let firstPositionReal = null;
   let rg = null;
   let startChar = "";
+  let lastSecondChar = "";
   let lastChar = "";
   let tempChars = "";
   let isFoundWhiteSpace = false;
@@ -289,9 +291,12 @@ const moveByCursor = (
       console.log(
         "firstPosition",
         `[${lastChar}]`,
+        `[${startChar}]`,
         newPosition === firstPosition
       );
+      lastSecondChar = lastChar;
       if (newPosition === firstPosition) {
+        //console.log("line head", c, `[${lastChar}]`);
         break;
       }
       rg = new vscode.Range(position, newPosition);
@@ -312,7 +317,7 @@ const moveByCursor = (
     //fix multiple space move bug
 
     //console.log('skip space', skip)
-    console.log("lastChar-======", c, `[${lastChar}]`);
+    console.log("lastChar-======", c, `[${lastChar}]`, `[${lastSecondChar}]`);
     if (c > 1) {
       c--;
       if (isSelect && c > 1) {
@@ -338,7 +343,7 @@ const moveByCursor = (
     if (lastChar === " ") {
       c--;
     }
-    console.log("_count", c, newPosition);
+    console.log("_count", c, newPosition.character, `[${lastChar}]`);
 
     //fix left move bug: when line start with a word, failed to left move
     if (direction.match(/^left$/i)) {
@@ -347,6 +352,26 @@ const moveByCursor = (
       if (tempChars.match(/^[0-9a-z_]+$/i)) {
         c = c + tempChars.length + 1;
       }
+
+      //try to skip multiple space
+      newPosition2 = getNewPosition(position, d);
+      while (
+        newPosition2.character &&
+        lastChar === " " &&
+        lastSecondChar === ""
+      ) {
+        position = newPosition2;
+        newPosition2 = getNewPosition(position, d);
+        rg = new vscode.Range(position, newPosition2);
+        lastChar = doc.getText(rg);
+        c++;
+        console.log("skip space", c, `[${lastChar}]`, `[${lastSecondChar}]`);
+        if (newPosition2.character === firstPosition.character) {
+          break;
+        }
+      }
+    } else if (direction.match(/^right$/i)) {
+      console.log("right stop");
     }
   }
   const _count = isByWord ? c : count;
