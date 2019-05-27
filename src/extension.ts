@@ -264,6 +264,8 @@ const moveByCursor = (
   let lastChar = "";
   let tempChars = "";
   let isFoundWhiteSpace = false;
+  let isFoundLeftAutoSkip = false;
+
   const selectionContainChars: any = ["'", '"', "[", "]", "(", ")", "{", "}"];
   const selectionStopChars: any = [".", ",", ":", "&", "+", "-", "<", ">"];
 
@@ -357,7 +359,31 @@ const moveByCursor = (
       newPosition2 = getNewPosition(position, d);
       while (
         newPosition2.character &&
-        lastChar === " " &&
+        lastChar.match(/^( )$/i) &&
+        lastSecondChar === ""
+      ) {
+        position = newPosition2;
+        newPosition2 = getNewPosition(position, d);
+        rg = new vscode.Range(position, newPosition2);
+        lastChar = doc.getText(rg);
+        c++;
+        isFoundLeftAutoSkip = true;
+        //console.log("skip space", c, `[${lastChar}]`, `[${lastSecondChar}]`);
+        if (newPosition2.character === firstPosition.character) {
+          break;
+        }
+      }
+
+      if (isFoundLeftAutoSkip) {
+        c++;
+        isFoundLeftAutoSkip = false;
+      }
+    } else if (direction.match(/^right$/i)) {
+      //try to skip multiple space
+      newPosition2 = getNewPosition(position, d);
+      while (
+        newPosition2.character &&
+        lastChar.match(/^( )$/i) &&
         lastSecondChar === ""
       ) {
         position = newPosition2;
@@ -366,12 +392,10 @@ const moveByCursor = (
         lastChar = doc.getText(rg);
         c++;
         console.log("skip space", c, `[${lastChar}]`, `[${lastSecondChar}]`);
-        if (newPosition2.character === firstPosition.character) {
-          break;
-        }
+        // if (newPosition2.character === firstPosition.character) {
+        //   break;
+        // }
       }
-    } else if (direction.match(/^right$/i)) {
-      console.log("right stop");
     }
   }
   const _count = isByWord ? c : count;
