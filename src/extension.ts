@@ -199,6 +199,22 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  //search next word
+  let disposable100 = vscode.commands.registerCommand(
+    "extension.fastcursor.next",
+    () => {
+      search("after");
+    }
+  );
+
+  //search next word
+  let disposable101 = vscode.commands.registerCommand(
+    "extension.fastcursor.before",
+    () => {
+      search("before");
+    }
+  );
+
   context.subscriptions.push(disposable);
   context.subscriptions.push(disposable2);
   context.subscriptions.push(disposable3);
@@ -221,6 +237,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable98);
   context.subscriptions.push(disposable97);
   context.subscriptions.push(disposable96);
+  context.subscriptions.push(disposable100);
+  context.subscriptions.push(disposable101);
 }
 
 const getNewPosition = (
@@ -232,11 +250,15 @@ const getNewPosition = (
     newPosition = position.with(position.line, 0);
   }
   if (direction === "left") {
-    newPosition = position.with(position.line, position.character - 1);
+    newPosition = position.with(
+      position.line,
+      position.character - 1 < 0 ? 0 : position.character - 1
+    );
   }
   return newPosition;
 };
 
+const editor = vscode.window.activeTextEditor;
 const moveByCursor = (
   direction: string = "up",
   by: string = "wrappedLine",
@@ -244,7 +266,6 @@ const moveByCursor = (
   count: number = 1,
   isByWord: boolean = true
 ): void => {
-  const editor = vscode.window.activeTextEditor;
   if (!editor) {
     console.log("no editor");
     return; // No open text editor
@@ -407,6 +428,293 @@ const moveByCursor = (
     select: isSelect,
     value: _count
   });
+};
+
+type TMoveByKeyword = "before" | "after";
+type TMoveByDirection = "right" | "left";
+
+interface IGetNoneEmpty {
+  str: string;
+  offset: number;
+}
+interface ICurrentPosition {
+  str: string;
+  word: string;
+  left: number;
+  right: number;
+}
+
+const getNoneEmpty = (d: TMoveByDirection): IGetNoneEmpty => {
+  if (!editor) {
+    console.log("no editor");
+    return {
+      str: "",
+      offset: 0
+    }; // No open text editor
+  }
+  const doc = editor.document;
+  let str = "";
+  let position = editor.selection.active;
+  let newPosition = null;
+  let rg = null;
+  let offset = 0;
+  while (!str.match(/[ #=<>@%!~\\\\'"\?\/\|\^\*\+\n\r\(\)\[\]\$\.\-]/i)) {
+    if (d === "left" && position.character - offset < 0) {
+      break;
+    }
+    newPosition =
+      d === "left"
+        ? position.with(position.line, position.character - offset)
+        : position.with(position.line, position.character + offset);
+    rg = new vscode.Range(position, newPosition);
+    str = doc.getText(rg);
+    offset++;
+    if (offset > 80) {
+      break;
+    }
+  }
+  console.log("noneempty str", `[${str}]`);
+  return { str, offset };
+};
+
+//deprecated
+const getCurrentWord = (
+  direction: TMoveByKeyword = "before"
+): ICurrentPosition => {
+  let before = getNoneEmpty("left");
+  let after = getNoneEmpty("right");
+  const w = `${before.str}${after.str}`;
+  return {
+    str: w,
+    word: w.replace(/[^0-9a-z_]/gi, ""),
+    left: before.offset,
+    right: after.offset
+  };
+};
+
+const findNextWordInLine = (
+  doc: vscode.TextDocument,
+  position: vscode.Position,
+  offset: number = 1
+): ICurrentPosition | null => {
+  const lineLength = doc.lineAt(position.line).range.end.character;
+  if (offset >= lineLength || offset + 1 >= lineLength) {
+    return null;
+  }
+  const posStart = position.with(position.line, offset);
+  const posEnd = position.with(position.line, offset + 1);
+  const rg = new vscode.Range(posStart, posEnd);
+  const char = doc.getText(rg);
+  console.log("char", `[${char}]`);
+  let tempPos: ICurrentPosition | null = null;
+  if (char) {
+    tempPos = getCurrentWord2(posEnd);
+    console.log(
+      "tempPos",
+      `[${tempPos.word}]`,
+      `[${tempPos.str}]`,
+      tempPos.word === "" ? offset : tempPos.left,
+      tempPos.word === "" ? offset + 1 : tempPos.right,
+      position.line,
+      doc.lineCount,
+      lineLength
+    );
+  }
+  if (tempPos && tempPos.word === "") {
+    tempPos.left = offset;
+    tempPos.right = offset + 1;
+  }
+  return tempPos;
+};
+
+const search = (direction: TMoveByKeyword = "before"): void => {
+  if (!editor) {
+    console.log("no editor");
+    return; // No open text editor
+  }
+  const doc = editor.document;
+
+  let position = editor.selection.active;
+
+  const lineLength = doc.lineAt(position.line).range.end.character;
+
+  const pos = getCurrentWord2(position);
+  const currentWordPos = pos;
+  console.log(
+    "pos",
+    `[${pos.word}]`,
+    `[${pos.str}]`,
+    pos.left,
+    pos.right,
+    lineLength
+  );
+  let tempPos = null;
+  let linePos = null;
+  let lineOffset = 0;
+  tempPos = searchLine(
+    position.with(position.line, pos.right + 1),
+    direction,
+    currentWordPos
+  );
+  while (
+    position.line + lineOffset <= doc.lineCount &&
+    (tempPos === null || (tempPos && tempPos.word !== currentWordPos.word))
+  ) {
+    lineOffset++;
+    tempPos = searchLine(
+      position.with(position.line + lineOffset, 0),
+      direction,
+      currentWordPos
+    );
+  }
+
+  if (tempPos) {
+    console.log(
+      "tempPos",
+      `[${tempPos.word}]`,
+      `[${tempPos.str}]`,
+      tempPos.left,
+      tempPos.right,
+      position.line + lineOffset,
+      lineLength
+    );
+
+    jumpToWord(lineOffset, tempPos);
+  } else {
+    console.log("nothing found");
+  }
+};
+
+const jumpToWord = async (lineOffset: number, tempPos: ICurrentPosition) => {
+  //jump to line
+  // for (let i = lineOffset; i > 0; i--) {
+  //   await vscode.commands.executeCommand("cursorMove", {
+  //     to: "down",
+  //     by: "line",
+  //     select: false,
+  //     value: 1
+  //   });
+  // }
+  await vscode.commands.executeCommand("cursorMove", {
+    to: "down",
+    by: "line",
+    select: false,
+    value: lineOffset
+  });
+  await vscode.commands.executeCommand("cursorMove", {
+    to: "wrappedLineStart",
+    by: "line",
+    select: false,
+    value: 1
+  });
+
+  setTimeout(async () => {
+    //jump to word
+    await vscode.commands.executeCommand("cursorMove", {
+      to: "right",
+      by: "line", //"line", //"wrappedLine"
+      select: false,
+      value: tempPos.left
+    });
+    await vscode.commands.executeCommand("cursorMove", {
+      to: "right",
+      by: "line", //"line", //"wrappedLine"
+      select: true,
+      value: tempPos.right - tempPos.left
+    });
+    //console.log("jump wait", 1);
+  }, 10);
+};
+
+const searchLine = (
+  position: vscode.Position,
+  direction: TMoveByKeyword = "before",
+  currentWordPos: ICurrentPosition
+): ICurrentPosition | null => {
+  if (!editor) {
+    console.log("no editor");
+    return null; // No open text editor
+  }
+  const doc = editor.document;
+
+  const lineLength = doc.lineAt(position.line).range.end.character;
+
+  const pos = getCurrentWord2(position);
+  console.log(
+    "pos",
+    `[${pos.word}]`,
+    `[${pos.str}]`,
+    pos.left,
+    pos.right,
+    lineLength
+  );
+
+  if (pos.word === currentWordPos.word) {
+    return pos;
+  }
+
+  let tempPos = null;
+  let isEol = false;
+  let findOffset = 1;
+  if (direction === "after") {
+    if (pos.right + 2 >= lineLength) {
+      isEol = true;
+    }
+
+    if (!isEol) {
+      tempPos = findNextWordInLine(doc, position, pos.right + 1);
+
+      //searchInLine
+      while (
+        tempPos &&
+        tempPos.right + 2 < lineLength &&
+        tempPos.word !== currentWordPos.word
+      ) {
+        findOffset = tempPos.right + 2;
+        console.log("findOffset", findOffset);
+        tempPos = findNextWordInLine(doc, position, findOffset);
+      }
+      // console.log("search stop in line");
+    }
+  }
+  return tempPos;
+};
+
+// interface IGetWordRangeAtPosition {
+//   line: number;
+//   character: number;
+// }
+const getCurrentWord2 = (pos: any = null): ICurrentPosition => {
+  let noneData = {
+    str: "",
+    word: "",
+    left: 0,
+    right: 0
+  };
+  if (!editor) {
+    console.log("no editor");
+    return noneData; // No open text editor
+  }
+  const doc = editor.document;
+  let position = pos ? pos : editor.selection.active;
+  noneData = {
+    str: "",
+    word: "",
+    left: position.character,
+    right: position.character + 1
+  };
+  const arr: any = doc.getWordRangeAtPosition(position);
+  if (arr) {
+    const w = doc.getText(arr);
+    return {
+      str: w,
+      word: w.replace(/[^0-9a-z_]/gi, ""),
+      left: arr.start.character,
+      right: arr.end.character
+    };
+  } else {
+    return noneData;
+  }
 };
 
 // this method is called when your extension is deactivated
