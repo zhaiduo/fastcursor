@@ -527,6 +527,41 @@ const findNextWordInLine = (
   return tempPos;
 };
 
+const findNextWordInLineLeft = (
+  doc: vscode.TextDocument,
+  position: vscode.Position,
+  offset: number = 1
+): ICurrentPosition | null => {
+  const lineLength = doc.lineAt(position.line).range.end.character;
+  if (offset < 0 || offset - 1 < 0) {
+    return null;
+  }
+  const posStart = position.with(position.line, offset);
+  const posEnd = position.with(position.line, offset - 1);
+  const rg = new vscode.Range(posStart, posEnd);
+  const char = doc.getText(rg);
+  console.log("char", `[${char}]`);
+  let tempPos: ICurrentPosition | null = null;
+  if (char) {
+    tempPos = getCurrentWord2(posEnd);
+    console.log(
+      "tempPos",
+      `[${tempPos.word}]`,
+      `[${tempPos.str}]`,
+      tempPos.word === "" ? offset : tempPos.left,
+      tempPos.word === "" ? offset + 1 : tempPos.right,
+      position.line,
+      doc.lineCount,
+      lineLength
+    );
+  }
+  if (tempPos && tempPos.word === "") {
+    tempPos.left = offset;
+    tempPos.right = offset - 1;
+  }
+  return tempPos;
+};
+
 const search = (direction: TMoveByKeyword = "before"): void => {
   if (!editor) {
     console.log("no editor");
@@ -549,23 +584,43 @@ const search = (direction: TMoveByKeyword = "before"): void => {
     lineLength
   );
   let tempPos = null;
-  let linePos = null;
   let lineOffset = 0;
-  tempPos = searchLine(
-    position.with(position.line, pos.right + 1),
-    direction,
-    currentWordPos
-  );
-  while (
-    position.line + lineOffset <= doc.lineCount &&
-    (tempPos === null || (tempPos && tempPos.word !== currentWordPos.word))
-  ) {
-    lineOffset++;
+
+  if (direction === "before") {
     tempPos = searchLine(
-      position.with(position.line + lineOffset, 0),
+      position.with(position.line, pos.left - 1),
+      direction,
+      currentWordPos,
+      true
+    );
+    while (
+      position.line - lineOffset >= 0 &&
+      (tempPos === null || (tempPos && tempPos.word !== currentWordPos.word))
+    ) {
+      lineOffset++;
+      tempPos = searchLine(
+        position.with(position.line - lineOffset, 0),
+        direction,
+        currentWordPos
+      );
+    }
+  } else {
+    tempPos = searchLine(
+      position.with(position.line, pos.right + 1),
       direction,
       currentWordPos
     );
+    while (
+      position.line + lineOffset <= doc.lineCount &&
+      (tempPos === null || (tempPos && tempPos.word !== currentWordPos.word))
+    ) {
+      lineOffset++;
+      tempPos = searchLine(
+        position.with(position.line + lineOffset, 0),
+        direction,
+        currentWordPos
+      );
+    }
   }
 
   if (tempPos) {
@@ -575,28 +630,30 @@ const search = (direction: TMoveByKeyword = "before"): void => {
       `[${tempPos.str}]`,
       tempPos.left,
       tempPos.right,
-      position.line + lineOffset,
+      position.line,
+      lineOffset,
       lineLength
     );
 
-    jumpToWord(lineOffset, tempPos);
+    if (direction === "before") {
+      jumpToWord(lineOffset, tempPos, position.line - lineOffset, direction);
+    } else {
+      jumpToWord(lineOffset, tempPos, position.line + lineOffset);
+    }
   } else {
     console.log("nothing found");
   }
 };
 
-const jumpToWord = async (lineOffset: number, tempPos: ICurrentPosition) => {
+const jumpToWord = async (
+  lineOffset: number,
+  tempPos: ICurrentPosition,
+  linenumber: number,
+  direction: TMoveByKeyword = "after"
+) => {
   //jump to line
-  // for (let i = lineOffset; i > 0; i--) {
-  //   await vscode.commands.executeCommand("cursorMove", {
-  //     to: "down",
-  //     by: "line",
-  //     select: false,
-  //     value: 1
-  //   });
-  // }
   await vscode.commands.executeCommand("cursorMove", {
-    to: "down",
+    to: direction === "before" ? "up" : "down",
     by: "line",
     select: false,
     value: lineOffset
@@ -622,14 +679,18 @@ const jumpToWord = async (lineOffset: number, tempPos: ICurrentPosition) => {
       select: true,
       value: tempPos.right - tempPos.left
     });
-    //console.log("jump wait", 1);
+    await vscode.commands.executeCommand("revealLine", {
+      lineNumber: linenumber,
+      at: "center"
+    });
   }, 10);
 };
 
 const searchLine = (
   position: vscode.Position,
   direction: TMoveByKeyword = "before",
-  currentWordPos: ICurrentPosition
+  currentWordPos: ICurrentPosition,
+  isMoveLeft: boolean = false
 ): ICurrentPosition | null => {
   if (!editor) {
     console.log("no editor");
@@ -656,7 +717,27 @@ const searchLine = (
   let tempPos = null;
   let isEol = false;
   let findOffset = 1;
-  if (direction === "after") {
+  if (direction === "before" && isMoveLeft) {
+    if (pos.left - 2 < 0) {
+      isEol = true;
+    }
+
+    if (!isEol) {
+      tempPos = findNextWordInLineLeft(doc, position, pos.left - 1);
+
+      //searchInLine
+      while (
+        tempPos &&
+        tempPos.left - 2 >= 0 &&
+        tempPos.word !== currentWordPos.word
+      ) {
+        findOffset = tempPos.left - 2;
+        console.log("findOffset", findOffset);
+        tempPos = findNextWordInLineLeft(doc, position, findOffset);
+      }
+      // console.log("search stop in line");
+    }
+  } else {
     if (pos.right + 2 >= lineLength) {
       isEol = true;
     }
